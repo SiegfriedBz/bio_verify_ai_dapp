@@ -1,24 +1,25 @@
 import { z } from "zod";
 import { AuthorSchema } from "./author";
 
+const MetadataSchema = z.object({
+	authors: z.array(AuthorSchema),
+	license: z.string().optional(),
+});
+
+const AttachementSchema = z.object({
+	name: z.string(),
+	type: z.string(),
+	cid: z.string(), // CID of the image/csv/etc
+});
+
 // The Manifest Schema
 // "Root Object" that the BioVerify Smart Contract points to.
 export const ManifestSchema = z.object({
-	version: z.string().default("1.0.0"),
-	metadata: z.object({
-		title: z.string(),
-		abstract: z.string(),
-		authors: z.array(AuthorSchema),
-		license: z.string(),
-	}),
+	metadata: MetadataSchema,
 	payload: z.object({
+		titleCid: z.string(), // CID of the text
+		abstractCid: z.string(), // CID of the text
 		manuscriptCid: z.string(), // CID of the text
-		attachments: z.array(
-			z.object({
-				name: z.string(),
-				type: z.string(),
-				cid: z.string(), // CID of the image/csv/etc
-			}),
-		),
+		attachments: z.array(AttachementSchema),
 	}),
 });
