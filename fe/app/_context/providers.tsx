@@ -1,8 +1,13 @@
 import type { FC, PropsWithChildren } from "react";
 import { ThemeProvider } from "./theme-provider";
+import { CustomWagmiProvider } from "./wagmi-provider";
 
-export const Providers: FC<PropsWithChildren> = (props) => {
-	const { children } = props;
+type Props = {
+	cookies: string | null;
+};
+
+export const Providers: FC<PropsWithChildren<Props>> = (props) => {
+	const { cookies, children } = props;
 
 	return (
 		<ThemeProvider
@@ -11,7 +16,7 @@ export const Providers: FC<PropsWithChildren> = (props) => {
 			enableSystem
 			disableTransitionOnChange
 		>
-			{children}
+			<CustomWagmiProvider cookies={cookies}>{children}</CustomWagmiProvider>
 		</ThemeProvider>
 	);
 };
