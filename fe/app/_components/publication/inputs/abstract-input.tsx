@@ -14,7 +14,7 @@ export const AbstractInput: FC = () => {
 			control={control}
 			render={({ field, fieldState }) => (
 				<Field data-invalid={fieldState.invalid}>
-					<FieldLabel>Abstract</FieldLabel>
+					<FieldLabel>Abstract *</FieldLabel>
 					<Textarea {...field} placeholder="Enter your research summary..." />
 					{fieldState.invalid && <FieldError errors={[fieldState.error]} />}
 				</Field>

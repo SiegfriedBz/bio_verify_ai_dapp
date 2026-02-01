@@ -1,6 +1,6 @@
 "use server";
 
-import type { PublicationFormT } from "@/app/_schemas/publication-form-schema";
+import type { CreateAndPinManifestRootCid } from "@/app/_schemas/publication-form-schema";
 
 const PINATA_JWT = process.env.PINATA_API_JWT;
 
@@ -24,7 +24,9 @@ const pinText = async (text: string, fileName: string) => {
 	return json.IpfsHash as string;
 };
 
-export const createAndPinManifestRootCid = async (data: PublicationFormT) => {
+export const createAndPinManifestRootCid = async (
+	data: CreateAndPinManifestRootCid,
+) => {
 	try {
 		// 1. Upload Attachments (Binary Files)
 		const attachments = await Promise.all(
@@ -50,7 +52,7 @@ export const createAndPinManifestRootCid = async (data: PublicationFormT) => {
 			}),
 		);
 
-		// 2. Upload Title, Abstract, and Manuscript as individual text files
+		// 2. Upload Title, Abstract, and Manuscript as individual files
 		// This gives us the specific CIDs for the Payload
 		const [titleCid, abstractCid, manuscriptCid] = await Promise.all([
 			pinText(data.title, "title.txt"),

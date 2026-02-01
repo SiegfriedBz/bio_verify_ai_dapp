@@ -19,7 +19,7 @@ export const ManuscriptInput: FC = () => {
 			control={control}
 			render={({ field, fieldState }) => (
 				<Field data-invalid={fieldState.invalid}>
-					<FieldLabel>Manuscript (Markdown or Text)</FieldLabel>
+					<FieldLabel>Manuscript *</FieldLabel>
 					<InputGroup>
 						<InputGroupTextarea
 							{...field}

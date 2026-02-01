@@ -14,7 +14,7 @@ export const TitleInput: FC = () => {
 			control={control}
 			render={({ field, fieldState }) => (
 				<Field data-invalid={fieldState.invalid}>
-					<FieldLabel>Title</FieldLabel>
+					<FieldLabel>Title *</FieldLabel>
 					<Input {...field} placeholder="Enter your research title..." />
 					{fieldState.invalid && <FieldError errors={[fieldState.error]} />}
 				</Field>

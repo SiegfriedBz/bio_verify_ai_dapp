@@ -3,11 +3,25 @@
 import { Trash2Icon } from "lucide-react";
 import type { FC } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { AuthorRoleSchema } from "@/app/_schemas/author";
-import { NetworkSchema } from "@/app/_schemas/wallet";
+import { AuthorRoleLabel, AuthorRoleSchema } from "@/app/_schemas/author";
+import { NetworkLabel, NetworkSchema } from "@/app/_schemas/wallet";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+
+const AUTHOR_ROLE_OPTIONS = AuthorRoleSchema.options.map((val) => {
+	return {
+		value: val,
+		label: AuthorRoleLabel[val],
+	};
+});
+
+const NETWORK_OPTIONS = NetworkSchema.options.map((val) => {
+	return {
+		value: val,
+		label: NetworkLabel[val],
+	};
+});
 
 type AuthorInputProps = {
 	index: number;
@@ -45,12 +59,13 @@ export const AuthorInput: FC<AuthorInputProps> = (props) => {
 							{...field}
 							className="flex h-9 w-full rounded-md border bg-background px-3 py-1 text-sm shadow-sm"
 						>
-							<option value={AuthorRoleSchema.enum.First_Author}>
-								First Author
-							</option>
-							<option value={AuthorRoleSchema.enum.Contributor}>
-								Contributor
-							</option>
+							{AUTHOR_ROLE_OPTIONS.map((o) => {
+								return (
+									<option key={o.value} value={o.value}>
+										{o.label}
+									</option>
+								);
+							})}
 						</select>
 					)}
 				/>
@@ -77,14 +92,13 @@ export const AuthorInput: FC<AuthorInputProps> = (props) => {
 							{...field}
 							className="flex h-9 w-full rounded-md border bg-background px-3 py-1 text-sm shadow-sm"
 						>
-							<option value={NetworkSchema.enum.sei_testnet}>
-								Sei testnet
-							</option>
-							<option value={NetworkSchema.enum.sei_mainnet}>
-								Sei mainnet
-							</option>
-							<option value={NetworkSchema.enum.sepolia}>Sepolia</option>
-							<option value={NetworkSchema.enum.ethereum}>Ethereum</option>
+							{NETWORK_OPTIONS.map((o) => {
+								return (
+									<option key={o.value} value={o.value}>
+										{o.label}
+									</option>
+								);
+							})}
 						</select>
 					)}
 				/>
