@@ -1,7 +1,7 @@
 'server-only'
 
 import { NetworkT } from "@/app/_schemas/wallet"
-import { pickReviewers, slashScientist } from "@/lib/protocol/actions"
+import { pickReviewers, slashPublisher } from "@/lib/protocol/actions"
 import { submissionGraph } from "./graph"
 
 type Params = {
@@ -22,8 +22,8 @@ export const startSubmissionAgent = async (
 
   // 2. Handle the Verdict
   if (finalState.verdict.decision === "fail") {
-    // Call Smart Contract's 'slashScientist' function
-    await slashScientist({ network, publicationId, reason: finalState.verdict.reason ?? "" })
+    // Call Smart Contract's 'slashPublisher' function
+    await slashPublisher({ network, publicationId, reason: finalState.verdict.reason ?? "" })
 
   } else {
     // Call Smart Contract's 'pickReviewers' function

@@ -9,12 +9,12 @@ type BaseParams = {
   publicationId: string
 }
 
-type SlashScientistParams = BaseParams & {
+type slashPublisherParams = BaseParams & {
   reason: string
 }
-export const slashScientist = async (params: SlashScientistParams) => {
+export const slashPublisher = async (params: slashPublisherParams) => {
   const { network, publicationId, reason } = params
-  console.log(`[STUB - PROTOCOL] 🔨 Slashing Scientist for Publication #${publicationId}`)
+  console.log(`[STUB - PROTOCOL] 🔨 Slashing Publisher for Publication #${publicationId}`)
 
   //TODO 1. Viem Logic for slashing
   const client = getAgentClient(network)
