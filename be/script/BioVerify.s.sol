@@ -7,15 +7,16 @@ import {Constants} from ".//Constants.sol";
 
 contract BioVerifyScript is Script, Constants {
     BioVerify public bioVerify;
+    address aiAgentAddress = vm.envAddress("AI_AGENT_ADDRESS");
+    address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
 
     function setUp() public {}
 
     function run() public returns (BioVerify) {
         vm.startBroadcast();
 
-        // constructor(uint256 _submissionFee, uint256 _minStake) {
-
-        bioVerify = new BioVerify(SUBMISSION_FEE, MIN_STAKE);
+        // constructor(address _aiAgentAddress, address _slashedToAddress, uint256 _submissionFee, uint256 _minStake) {
+        bioVerify = new BioVerify(aiAgentAddress, treasuryAddress, SUBMISSION_FEE, MIN_STAKE);
 
         vm.stopBroadcast();
 

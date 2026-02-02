@@ -1,22 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
 // errors
 error BioVerify_MustPayToSubmit();
+error BioVerify_OnlyAgent();
+error BioVerify_InvalidPublicationId(uint256 publicationId);
+error BioVerify_AlreadySlashed(uint256 publicationId);
+error BioVerify_ZeroValueToTransfer();
+error BioVerify_FailedToTransferTo(address to);
 
 // events
 event BioVerify_SubmittedPublication(address publisher, uint256 id, string cid);
+event BioVerify_SlashedPublisher(uint256 publicationId, address publisher);
+event BioVerify_TransferTotalSlashed(address to, uint256 value);
 
-contract BioVerify {
+contract BioVerify is ReentrancyGuard {
     // storage
+
     uint256 nextPublicationId;
-    mapping(uint256 publicationId => string cid) public publicationCurrentCid;
     mapping(address publisher => uint256[] publicationIds) public publisherToPublicationIds;
+    mapping(uint256 publicationId => string cid) public publicationCurrentCid;
     mapping(uint256 publicationId => mapping(address staker => uint256 stake)) public publicationStakes;
     mapping(uint256 publicationId => uint256 totalStake) public publicationTotalStake;
-    Publication[] public Publications;
+    Publication[] public publications;
+    uint256 public totalSlashed;
 
     // immutable
+    address public immutable I_AI_AGENT_ADDRESS;
+    address public immutable I_TREASURY_ADDRESS;
     uint256 public immutable I_SUBMISSION_FEE;
     uint256 public immutable I_MIN_STAKE;
 
@@ -38,8 +51,17 @@ contract BioVerify {
         SLASHED
     }
 
+    // modifiers
+
+    modifier onlyAgent() {
+        _onlyAgent();
+        _;
+    }
+
     // functions
-    constructor(uint256 _submissionFee, uint256 _minStake) {
+    constructor(address _aiAgentAddress, address _slashedToAddress, uint256 _submissionFee, uint256 _minStake) {
+        I_AI_AGENT_ADDRESS = _aiAgentAddress;
+        I_TREASURY_ADDRESS = _slashedToAddress;
         I_SUBMISSION_FEE = _submissionFee;
         I_MIN_STAKE = _minStake;
     }
@@ -53,19 +75,72 @@ contract BioVerify {
         uint256 publicationId = nextPublicationId;
         uint256 stake = msg.value - I_SUBMISSION_FEE;
 
-        Publication storage newPublication = Publications.push();
+        Publication storage newPublication = publications.push();
         newPublication.id = publicationId;
         newPublication.publisher = msg.sender;
         newPublication.cids.push(_cid);
         newPublication.status = PublicationStatus.SUBMITTED;
 
         publicationCurrentCid[publicationId] = _cid;
-        publisherToPublicationIds[msg.sender].push(nextPublicationId);
+        publisherToPublicationIds[msg.sender].push(publicationId);
         publicationStakes[publicationId][msg.sender] = stake;
         publicationTotalStake[publicationId] = stake;
 
         nextPublicationId++;
 
         emit BioVerify_SubmittedPublication(msg.sender, publicationId, _cid);
+    }
+
+    function slashPublisher(uint256 _publicationId) external onlyAgent {
+        // 1. Check
+        if (_publicationId >= nextPublicationId) {
+            revert BioVerify_InvalidPublicationId(_publicationId);
+        }
+
+        Publication storage publication = publications[_publicationId];
+        if (publication.status == PublicationStatus.SLASHED) {
+            revert BioVerify_AlreadySlashed(_publicationId);
+        }
+
+        // 2. Effect
+        address publisher = publication.publisher;
+        uint256 publisherStake = publicationStakes[_publicationId][publisher];
+        publicationStakes[_publicationId][publisher] = 0;
+        publicationTotalStake[_publicationId] -= publisherStake;
+        totalSlashed += publisherStake;
+        publication.status = PublicationStatus.SLASHED;
+
+        emit BioVerify_SlashedPublisher(_publicationId, publisher);
+    }
+
+    function transferTotalSlashed() external onlyAgent nonReentrant {
+        // 1. Check
+        uint256 value = totalSlashed;
+        if (value == 0) {
+            revert BioVerify_ZeroValueToTransfer();
+        }
+
+        // 2. Effect
+        totalSlashed = 0;
+
+        // 3. Interactions
+        (bool sent,) = I_TREASURY_ADDRESS.call{value: value}("");
+        if (!sent) {
+            revert BioVerify_FailedToTransferTo(I_TREASURY_ADDRESS);
+        }
+
+        emit BioVerify_TransferTotalSlashed(I_TREASURY_ADDRESS, value);
+    }
+
+    // view
+    function getFullPublication(uint256 _id) external view returns (Publication memory) {
+        return publications[_id];
+    }
+
+    // internal
+    function _onlyAgent() internal view {
+        if (msg.sender != I_AI_AGENT_ADDRESS) {
+            revert BioVerify_OnlyAgent();
+        }
     }
 }
