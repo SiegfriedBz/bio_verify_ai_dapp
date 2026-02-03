@@ -1,4 +1,4 @@
-import type { Abi } from "viem";
+import type { Abi } from "viem"
 
 export enum ContractChain {
 	SEPOLIA = "SEPOLIA",
@@ -6,9 +6,9 @@ export enum ContractChain {
 }
 
 export type ContractConfig = {
-	address: `0x${string}`;
-	abi: Abi;
-};
+	address: `0x${string}`
+	abi: Abi
+}
 
 const bioVerifyConfigSeoplia: ContractConfig = {
 	address: "0x732DBB8Ca8ab0ca2167866F151057FcE092978Ca",
@@ -44,7 +44,7 @@ const bioVerifyConfigSeoplia: ContractConfig = {
 		},
 		{
 			inputs: [],
-			name: "I_MIN_STAKE",
+			name: "I_PUBLISHER_MIN_STAKE",
 			outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 			stateMutability: "view",
 			type: "function",
@@ -121,7 +121,7 @@ const bioVerifyConfigSeoplia: ContractConfig = {
 			type: "function",
 		},
 	],
-};
+}
 
 // TODO - deploy and fill
 const bioVerifyConfigSeiTestNet: ContractConfig = {
@@ -158,7 +158,7 @@ const bioVerifyConfigSeiTestNet: ContractConfig = {
 		},
 		{
 			inputs: [],
-			name: "I_MIN_STAKE",
+			name: "I_PUBLISHER_MIN_STAKE",
 			outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 			stateMutability: "view",
 			type: "function",
@@ -235,9 +235,9 @@ const bioVerifyConfigSeiTestNet: ContractConfig = {
 			type: "function",
 		},
 	],
-};
+}
 
 export const bioVerifyContractConfig: Record<ContractChain, ContractConfig> = {
 	[ContractChain.SEPOLIA]: bioVerifyConfigSeoplia,
 	[ContractChain.SEI_TESNET]: bioVerifyConfigSeiTestNet,
-};
+}

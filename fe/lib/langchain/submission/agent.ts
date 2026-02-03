@@ -15,7 +15,7 @@ export const startSubmissionAgent = async (
 ) => {
   const { network, publicationId, rootCid } = params
 
-  const config = { configurable: { thread_id: publicationId } }
+  const config = { configurable: { thread_id: `${publicationId}-${rootCid}` } }
 
   // 1. Run the Graph
   const finalState = await submissionGraph.invoke({ publicationId, rootCid }, config)

@@ -1,44 +1,44 @@
-"use client";
+"use client"
 
-import { type FC, useMemo } from "react";
-import { Controller, useFormContext } from "react-hook-form";
-import { formatEther } from "viem";
-import { useReadContract } from "wagmi";
-import { useContractConfig } from "@/app/_hooks/use-contract-config";
+import { useContractConfig } from "@/app/_hooks/use-contract-config"
 import {
 	Field,
 	FieldDescription,
 	FieldError,
 	FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { type FC, useMemo } from "react"
+import { Controller, useFormContext } from "react-hook-form"
+import { formatEther } from "viem"
+import { useReadContract } from "wagmi"
 
 export const SendValueInput: FC = () => {
-	const { control } = useFormContext();
+	const { control } = useFormContext()
 
-	const contractConfig = useContractConfig();
+	const contractConfig = useContractConfig()
 
 	// Fetch Publication Submission Fee
 	const { data: submissionFeeWei } = useReadContract({
 		...contractConfig,
 		functionName: "I_SUBMISSION_FEE",
-	});
+	})
 
 	// Fetch Publication Submission Minimum Stake
 	const { data: minStakeWei } = useReadContract({
 		...contractConfig,
-		functionName: "I_MIN_STAKE",
-	});
+		functionName: "I_PUBLISHER_MIN_STAKE",
+	})
 
 	const submissionFee = useMemo(
 		() => (submissionFeeWei ? formatEther(submissionFeeWei as bigint) : ""),
 		[submissionFeeWei],
-	);
+	)
 
 	const minStake = useMemo(
 		() => (minStakeWei ? formatEther(minStakeWei as bigint) : ""),
 		[minStakeWei],
-	);
+	)
 
 	return (
 		<Controller
@@ -64,5 +64,5 @@ export const SendValueInput: FC = () => {
 				</Field>
 			)}
 		/>
-	);
-};
+	)
+}
