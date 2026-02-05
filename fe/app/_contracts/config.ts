@@ -21,7 +21,7 @@ const bioVerifyConfigSeoplia: ContractConfig = {
 			stateMutability: "nonpayable",
 			type: "constructor",
 		},
-		{ inputs: [], name: "BioVerify_MustPayToSubmit", type: "error" },
+		{ inputs: [], name: "BioVerify_MustPayToPublish", type: "error" },
 		{
 			anonymous: false,
 			inputs: [
@@ -51,7 +51,7 @@ const bioVerifyConfigSeoplia: ContractConfig = {
 		},
 		{
 			inputs: [],
-			name: "I_MIN_SUBMISSION_FEE",
+			name: "I_PUBLISHER_MIN_FEE",
 			outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 			stateMutability: "view",
 			type: "function",
@@ -135,7 +135,7 @@ const bioVerifyConfigSeiTestNet: ContractConfig = {
 			stateMutability: "nonpayable",
 			type: "constructor",
 		},
-		{ inputs: [], name: "BioVerify_MustPayToSubmit", type: "error" },
+		{ inputs: [], name: "BioVerify_MustPayToPublish", type: "error" },
 		{
 			anonymous: false,
 			inputs: [
@@ -165,7 +165,7 @@ const bioVerifyConfigSeiTestNet: ContractConfig = {
 		},
 		{
 			inputs: [],
-			name: "I_MIN_SUBMISSION_FEE",
+			name: "I_PUBLISHER_MIN_FEE",
 			outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 			stateMutability: "view",
 			type: "function",

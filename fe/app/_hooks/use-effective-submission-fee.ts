@@ -14,7 +14,7 @@ export const useEffectiveSubmissionFee = () => {
 	// 2. Fetch Publication Submission Fee
 	const { data: minSubmissionFeeWei } = useReadContract({
 		...contractConfig,
-		functionName: "I_MIN_SUBMISSION_FEE",
+		functionName: "I_PUBLISHER_MIN_FEE",
 	})
 
 	// 3. The "Effective Fee" is the higher of the ( minSubmissionFeeWei, estimatedVrfFeeWei )
