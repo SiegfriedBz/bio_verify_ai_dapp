@@ -23,10 +23,10 @@ export const startSubmissionAgent = async (
   // 2. Handle the Verdict
   if (finalState.verdict.decision === "fail") {
     // Call Smart Contract's 'slashPublisher' function
-    await slashPublisher({ network, publicationId, reason: finalState.verdict.reason ?? "" })
+    await slashPublisher({ network, publicationId, reason: finalState.verdict.reason ?? "", rootCid })
 
   } else {
     // Call Smart Contract's 'pickReviewers' function
-    await pickReviewers({ network, publicationId })
+    await pickReviewers({ network, publicationId, rootCid })
   }
 }

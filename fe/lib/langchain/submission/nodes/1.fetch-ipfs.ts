@@ -5,6 +5,7 @@ import { Publication } from "@/app/_schemas/publication"
 import type { SubmissionState } from "../state"
 
 const PINATA_IPFS_URL = process.env.NEXT_PUBLIC_PINATA_IPFS_URL ?? ""
+
 export const fetchIpfsNode = async (
 	state: SubmissionState,
 ): Promise<Partial<SubmissionState>> => {
