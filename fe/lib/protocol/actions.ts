@@ -2,7 +2,7 @@
 
 import { NetworkT } from "@/app/_schemas/wallet"
 import { sendTelegramNotification } from "../notifications/telegram"
-import { getAgentClient } from "./viem-client"
+import { agentAccount, getClient, getContractConfig } from "./viem-client"
 
 type BaseParams = {
   network: NetworkT
@@ -14,10 +14,23 @@ type slashPublisherParams = BaseParams & {
 }
 export const slashPublisher = async (params: slashPublisherParams) => {
   const { network, publicationId, reason } = params
-  console.log(`[STUB - PROTOCOL] 🔨 Slashing Publisher for Publication #${publicationId}`)
+  console.log(`🔨 Agent Slashing Publisher for Publication #${publicationId}`)
 
-  //TODO 1. Viem Logic for slashing
-  const client = getAgentClient(network)
+  // 1. Call BioVerify.slashPublisher
+  const contractConfig = getContractConfig(network)
+
+  const { publicClient, agentClient } = getClient(network)
+
+  const { request } = await publicClient.simulateContract({
+    account: agentAccount,
+    ...contractConfig,
+    functionName: 'slashPublisher',
+    args: [BigInt(publicationId)]
+  })
+
+  console.log("===> slashPublisher request", request)
+
+  await agentClient.writeContract(request)
 
   // 2. Notify the community immediately
   await sendTelegramNotification(
@@ -30,14 +43,27 @@ export const slashPublisher = async (params: slashPublisherParams) => {
 
 export const pickReviewers = async (params: BaseParams) => {
   const { network, publicationId } = params
-  console.log(`[STUB - PROTOCOL] 🎲 Triggering VRF for Publication #${publicationId}`)
+  console.log(`🎲 Agent Triggering VRF for Publication #${publicationId}`)
 
-  //TODO 1. Viem Logic for Chainlink VRF 
-  const client = getAgentClient(network)
+  // 1. Call BioVerify.pickReviewers (call VRF)
+  const contractConfig = getContractConfig(network)
+
+  const { publicClient, agentClient } = getClient(network)
+
+  const { request } = await publicClient.simulateContract({
+    account: agentAccount,
+    ...contractConfig,
+    functionName: 'pickReviewers',
+    args: [BigInt(publicationId)]
+  })
+
+  console.log("===> pickReviewers request", request)
+
+  await agentClient.writeContract(request)
 
   await sendTelegramNotification(
     `✅ *BioVerify Alert: Review Phase Started*\n\n` +
     `Publication: #${publicationId} passed AI validation.\n` +
-    `Status: Selecting 5 random reviewers via Chainlink VRF.`
+    `Status: Selecting 3 random reviewers via Chainlink VRF.`
   )
 }

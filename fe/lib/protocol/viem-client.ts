@@ -1,5 +1,6 @@
 'server-only'
 
+import { bioVerifyContractConfig } from "@/app/_contracts/config"
 import { NetworkSchema, NetworkT } from "@/app/_schemas/wallet"
 import { createPublicClient, createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -12,7 +13,8 @@ const SEI_TESTNET_RPC_URL = process.env.NEXT_PUBLIC_ALCHEMY_SEI_TESTNET_RPC_URL 
 // 1. Setup Account (Shared across chains)
 const privateKey = AGENT_PRIVATE_KEY as `0x${string}`
 if (!privateKey) throw new Error("AGENT_PRIVATE_KEY is missing from .env")
-const account = privateKeyToAccount(privateKey)
+
+export const agentAccount = privateKeyToAccount(privateKey)
 
 // 2. SEPOLIA CLIENTS
 export const sepoliaPublicClient = createPublicClient({
@@ -22,7 +24,7 @@ export const sepoliaPublicClient = createPublicClient({
 
 // Signer Client for Sepolia
 export const sepoliaAgentClient = createWalletClient({
-  account,
+  account: agentAccount,
   chain: sepolia,
   transport: http(ALCHEMY_SEPOLIA_RPC_URL),
 })
@@ -35,17 +37,26 @@ export const seiPublicClient = createPublicClient({
 
 // Signer Client for Sei Testnet
 export const seiAgentClient = createWalletClient({
-  account,
+  account: agentAccount,
   chain: seiTestnet,
   transport: http(SEI_TESTNET_RPC_URL),
 })
 
 /**
- * HELPER: Get Signer Client by network
+ * HELPER: Get Viem Client by network
  */
-export const getAgentClient = (network: NetworkT) => {
-  if (network === NetworkSchema.enum.sepolia) return sepoliaAgentClient
-  if (network === NetworkSchema.enum.sei_testnet) return seiAgentClient
+export const getClient = (network: NetworkT) => {
+  if (network === NetworkSchema.enum.sepolia) return { publicClient: sepoliaPublicClient, agentClient: sepoliaAgentClient }
+  if (network === NetworkSchema.enum.sei_testnet) return { publicClient: seiPublicClient, agentClient: seiAgentClient }
 
   throw new Error("Unsupported Chain ID")
 }
+
+/**
+ * HELPER: Get contract address & abi by network
+ */
+export const getContractConfig = (network: NetworkT) => {
+  return bioVerifyContractConfig[network]
+}
+
+
