@@ -5,6 +5,54 @@
 ### ✅ Phase 1: Autonomous Foundation & Publication Submission
 **Timeline:** Jan 27 — Feb 6, 2026
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Scientist (Next.js/Wagmi)
+    participant IPFS as Pinata/IPFS
+    participant BC as BioVerify Contract
+    participant VRF as Chainlink VRF
+    participant AN as Alchemy Notify
+    participant API as Vercel API (Webhook)
+    participant LG as LangGraph Agent
+    participant TAV as Tavily Search
+
+    Note over S, IPFS: Frontend: Pre-processing
+    S->>IPFS: Recursive upload (authors, PDF + Assets)
+    IPFS-->>S: Return Root CID (Manifest)
+
+    Note over S, BC: Protocol Entry
+    S->>BC: submitPublication(rootCID, stake + fee)
+    BC->>BC: emit PublicationSubmitted
+    BC-->>AN: [Blockchain Event]
+    AN->>API: POST /api/webhooks/alchemy/submission
+    
+    Note right of API: HMAC Signature Verified
+    
+    API->>LG: startSubmissionAgent(pubId, rootCid)
+    
+    activate LG
+    LG->>IPFS: Fetch Abstract from Root CID
+    IPFS-->>LG: Abstract Data
+    LG->>TAV: Plagiarism Search (Abstract)
+    TAV-->>LG: Similarity Score & Context
+    
+    alt Similarity > Threshold (FAIL)
+        LG->>BC: slashPublisher(pubId)
+        BC->>BC: emit SlashedPublisher
+    else Similarity < Threshold (PASS)
+        LG->>BC: pickReviewers(pubId)
+        BC->>VRF: requestRandomWords()
+        activate VRF
+        VRF-->>BC: fulfillRandomWords(requestId, randoms)
+        deactivate VRF
+        BC->>BC: emit Agent_PickedReviewers(pubId, reviewers)
+    end
+    deactivate LG
+
+    Note over BC, LG: Telemetry logs pushed to Telegram
+```
+
 * **Protocol Engine (Solidity & Foundry)**
     * **[x] Incentive Alignment:** Implemented a game-theoretic staking model requiring collateral from both Scientists (Submission Stake) and Reviewers (Commitment Stake).
     * **[x] Sustainable Tokenomics:** Developed a **Decoupled Economic Model** separating returnable stakes from operational fees to cover Chainlink VRF costs.
@@ -16,6 +64,7 @@
     * **[x] Scientist Submission Portal:** Developed a React-based frontend using **Wagmi** for seamless  IPFS metadata pinning and publication submission.
     * **[x] Event-Driven Architecture:** Established a secure **Alchemy Notify** pipeline with HMAC signature verification.
     * **[x] Real-time Monitoring:** Deployed a **Telegram Notification Engine** for live telemetry of protocol activity and AI reasoning logs.
+ 
 
 ---
 
