@@ -1,7 +1,7 @@
 'server-only'
 
 import { NetworkT } from "@/app/_schemas/wallet"
-import { pickReviewers, slashPublisher } from "@/lib/protocol/actions"
+import { pickReviewers, slashPublisher } from "@/lib/protocol/submission/actions"
 import { getThreadId } from "@/lib/utils/get-thread-id"
 import { submissionGraph } from "./graph"
 
