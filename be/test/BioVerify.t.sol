@@ -3,17 +3,15 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-import {BioVerifyScript} from "../script/BioVerify.s.sol";
 import {Constants} from "../script/Constants.sol";
 import {
     BioVerify,
+    BioVerifyConfig,
 
     // events
     BioVerify_SubmittedPublication,
     BioVerify_SlashedPublisher,
     BioVerify_JoinReviewerPool,
-    BioVerify_Agent_RequestedVRF,
-    BioVerify_Agent_PickedReviewers,
     BioVerify_Agent_TransferTotalSlashed,
     BioVerify_Agent_SetMemberReputationScore,
 
@@ -63,19 +61,21 @@ contract BioVerifyTest is Test, Constants {
         vrfCoordinatorMock.fundSubscriptionWithNative{value: 1000 ether}(vrfMockSubscriptionId); // Sub ID 1
 
         // 3. Deploy BioVerify manually for the test to point to the Mock
-        bioVerify = new BioVerify(
-            aiAgentAddress,
-            treasuryAddress,
-            PUBLISHER_MIN_FEE,
-            PUBLISHER_MIN_STAKE,
-            REVIEWER_MIN_STAKE,
-            vrfMockSubscriptionId,
-            VRF_KEY_HASH,
-            VRF_CALLBACK_GAS_LIMIT,
-            VRF_REQUEST_CONFIRMATIONS,
-            VRF_NUM_WORDS,
-            address(vrfCoordinatorMock)
-        );
+        BioVerifyConfig memory mockConfig = BioVerifyConfig({
+            aiAgent: aiAgentAddress,
+            treasury: treasuryAddress,
+            pubMinFee: PUBLISHER_MIN_FEE,
+            pubMinStake: PUBLISHER_MIN_STAKE,
+            revMinStake: REVIEWER_MIN_STAKE,
+            minReviewsCount: MIN_REVIEWS_COUNT,
+            vrfSubId: vrfMockSubscriptionId,
+            vrfKeyHash: VRF_KEY_HASH,
+            vrfGasLimit: VRF_CALLBACK_GAS_LIMIT,
+            vrfConfirmations: VRF_REQUEST_CONFIRMATIONS,
+            vrfNumWords: VRF_NUM_WORDS,
+            vrfCoordinator: address(vrfCoordinatorMock)
+        });
+        bioVerify = new BioVerify(mockConfig);
 
         // 4. add bioVerify to mock vrf
         vrfCoordinatorMock.addConsumer(vrfMockSubscriptionId, address(bioVerify));
@@ -88,6 +88,7 @@ contract BioVerifyTest is Test, Constants {
         assertEq(bioVerify.I_PUBLISHER_MIN_FEE(), PUBLISHER_MIN_FEE);
         assertEq(bioVerify.I_PUBLISHER_MIN_STAKE(), PUBLISHER_MIN_STAKE);
         assertEq(bioVerify.I_REVIEWER_MIN_STAKE(), REVIEWER_MIN_STAKE);
+        assertEq(bioVerify.I_MIN_REVIEWS_COUNT(), MIN_REVIEWS_COUNT);
         assertEq(bioVerify.I_VRF_KEY_HASH(), VRF_KEY_HASH);
         assertEq(bioVerify.I_VRF_CALLBACK_GAS_LIMIT(), VRF_CALLBACK_GAS_LIMIT);
         assertEq(bioVerify.I_VRF_REQUEST_CONFIRMATIONS(), VRF_REQUEST_CONFIRMATIONS);

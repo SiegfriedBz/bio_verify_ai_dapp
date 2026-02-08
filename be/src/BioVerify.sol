@@ -5,6 +5,21 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
+struct BioVerifyConfig {
+    address aiAgent;
+    address treasury;
+    uint256 pubMinFee;
+    uint256 pubMinStake;
+    uint256 revMinStake;
+    uint32 minReviewsCount;
+    uint256 vrfSubId;
+    bytes32 vrfKeyHash;
+    uint32 vrfGasLimit;
+    uint16 vrfConfirmations;
+    uint32 vrfNumWords;
+    address vrfCoordinator;
+}
+
 // --- Errors ---
 error BioVerify_MustPayToPublish();
 error BioVerify_InsufficientPublisherStake();
@@ -79,35 +94,25 @@ contract BioVerify is VRFConsumerBaseV2Plus, ReentrancyGuard {
     uint32 public immutable I_VRF_CALLBACK_GAS_LIMIT;
     uint16 public immutable I_VRF_REQUEST_CONFIRMATIONS;
     uint32 public immutable I_VRF_NUM_WORDS;
+    uint32 public immutable I_MIN_REVIEWS_COUNT;
 
     modifier onlyAgent() {
         _onlyAgent();
         _;
     }
 
-    constructor(
-        address _aiAgentAddress,
-        address _treasuryAddress,
-        uint256 _publisherMinFee,
-        uint256 _publisherMinStake,
-        uint256 _reviewerMinStake,
-        uint256 _vrfSubscriptionId,
-        bytes32 _vrfKeyHash,
-        uint32 _vrfCallbackGasLimit,
-        uint16 _vrfRequestConfirmations,
-        uint32 _vrfNumWords,
-        address _vrfCoordinator
-    ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
-        I_AI_AGENT_ADDRESS = _aiAgentAddress;
-        I_TREASURY_ADDRESS = _treasuryAddress;
-        I_PUBLISHER_MIN_FEE = _publisherMinFee;
-        I_PUBLISHER_MIN_STAKE = _publisherMinStake;
-        I_REVIEWER_MIN_STAKE = _reviewerMinStake;
-        I_VRF_SUBSCRIPTION_ID = _vrfSubscriptionId;
-        I_VRF_KEY_HASH = _vrfKeyHash;
-        I_VRF_CALLBACK_GAS_LIMIT = _vrfCallbackGasLimit;
-        I_VRF_REQUEST_CONFIRMATIONS = _vrfRequestConfirmations;
-        I_VRF_NUM_WORDS = _vrfNumWords;
+    constructor(BioVerifyConfig memory config) VRFConsumerBaseV2Plus(config.vrfCoordinator) {
+        I_AI_AGENT_ADDRESS = config.aiAgent;
+        I_TREASURY_ADDRESS = config.treasury;
+        I_PUBLISHER_MIN_FEE = config.pubMinFee;
+        I_PUBLISHER_MIN_STAKE = config.pubMinStake;
+        I_REVIEWER_MIN_STAKE = config.revMinStake;
+        I_MIN_REVIEWS_COUNT = config.minReviewsCount;
+        I_VRF_SUBSCRIPTION_ID = config.vrfSubId;
+        I_VRF_KEY_HASH = config.vrfKeyHash;
+        I_VRF_CALLBACK_GAS_LIMIT = config.vrfGasLimit;
+        I_VRF_REQUEST_CONFIRMATIONS = config.vrfConfirmations;
+        I_VRF_NUM_WORDS = config.vrfNumWords;
     }
 
     /**
@@ -289,3 +294,4 @@ contract BioVerify is VRFConsumerBaseV2Plus, ReentrancyGuard {
         return false;
     }
 }
+

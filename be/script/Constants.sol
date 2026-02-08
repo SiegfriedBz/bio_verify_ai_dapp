@@ -7,6 +7,10 @@ contract Constants {
     uint256 constant PUBLISHER_MIN_STAKE = 0.0005 ether; // Security/slashing - submitPublication call
     // Reviewer
     uint256 constant REVIEWER_MIN_STAKE = 0.0005 ether; // Security/slashing - joinReviewerPool call
+
+    // Reviews
+    uint32 constant MIN_REVIEWS_COUNT = 2;
+
     // VRF
     address constant VRF_SEPOLIA_COORDINATOR = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
     bytes32 constant VRF_KEY_HASH = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
