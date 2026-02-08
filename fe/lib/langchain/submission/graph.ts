@@ -21,22 +21,10 @@ import { SubmissionStateSchema } from "./state"
  */
 
 const builder = new StateGraph(SubmissionStateSchema)
+  .addNode("fetchIpfsNode", fetchIpfsNode)
+  .addNode("tavilyNode", tavilyNode)
+  .addNode("llmNode", llmNode,)
 
-  // Define Graph Nodes
-  // Cache Policy is set to effectively permanent (within session) to prevent 
-  // redundant LLM/Search costs during retry logic or state recovery.
-  .addNode("fetchIpfsNode", fetchIpfsNode, {
-    cachePolicy: { ttl: 10_000_000_000 },
-  })
-  .addNode("tavilyNode", tavilyNode, {
-    cachePolicy: { ttl: 10_000_000_000 },
-  })
-  .addNode("llmNode", llmNode, {
-    cachePolicy: { ttl: 10_000_000_000 },
-  })
-
-  // Define Execution Flow (Linear Pipeline)
-  // We start by hydrating the state from IPFS before performing external lookups.
   .addEdge(START, "fetchIpfsNode")
   .addEdge("fetchIpfsNode", "tavilyNode")
   .addEdge("tavilyNode", "llmNode")

@@ -4,6 +4,11 @@ import { waitUntil } from "@vercel/functions"
 import { createHmac } from "node:crypto"
 import { decodeEventLog, parseAbi } from "viem"
 
+/**
+	cast sig-event "BioVerify_SubmittedPublication(address publisher, uint256 id, string cid)"
+	0xad618e8126c526f80565be03482b41af030be607a1ddab0a58dbcdc70c0c6922
+ */
+
 const SEPOLIA_SK =
 	process.env.ALCHEMY_ETH_SEPOLIA_SubmittedPublication_WEBHOOK_SK
 
@@ -41,7 +46,7 @@ export async function POST(req: Request) {
 
 		const body = JSON.parse(rawBody)
 		const log = body.event?.data?.block?.logs?.[0]
-		if (!log) return new Response("No logs found", { status: 200 })
+		if (!log) return new Response("SubmittedPublication - No logs found", { status: 200 })
 
 		// Decode log
 		const decoded = decodeEventLog({
@@ -74,16 +79,16 @@ export async function POST(req: Request) {
 				publicationId: publicationIdString,
 				rootCid: cid,
 			}).then(() => {
-				console.log(`✅ Background Agent finished for Publication id: ${publicationIdString}`)
+				console.log(`✅ SubmittedPublication - Background Agent finished for Publication id: ${publicationIdString}`)
 			}).catch(err => {
-				console.error(`❌ Background Agent failed:`, err)
+				console.error(`❌ SubmittedPublication - Background Agent failed:`, err)
 			})
 		)
 
 		// 4'. Return response immediately to Alchemy 
 		return new Response("Accepted", { status: 202 })
 	} catch (err) {
-		console.error("Webhook Logic Error:", err)
+		console.error("SubmittedPublication Webhook Logic Error:", err)
 		return new Response("Internal Error", { status: 500 })
 	}
 }

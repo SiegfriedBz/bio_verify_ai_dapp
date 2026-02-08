@@ -2,7 +2,7 @@ import { PublicationSchema } from "@/app/_schemas/publication"
 import { StateSchema } from "@langchain/langgraph"
 import { z } from "zod"
 
-export const VerdictSchema = z.object({
+const VerdictSchema = z.object({
 	decision: z.enum(["pass", "fail", "pending"]).default("pending"),
 	reason: z.string().optional()
 })

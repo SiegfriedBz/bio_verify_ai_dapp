@@ -42,9 +42,9 @@ export const llmNode = async (
 	].join("\n"))
 
 	const llm = createChatModel()
-	const structuredLllm = llm.withStructuredOutput(StructuredVerdictSchema)
+	const structuredLlm = llm.withStructuredOutput(StructuredVerdictSchema)
 
-	const response = await structuredLllm.invoke([
+	const response = await structuredLlm.invoke([
 		systemMsg,
 		humanMsg
 	])

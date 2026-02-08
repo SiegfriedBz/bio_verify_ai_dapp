@@ -2,6 +2,7 @@
 
 import { NetworkT } from "@/app/_schemas/wallet"
 import { pickReviewers, slashPublisher } from "@/lib/protocol/actions"
+import { getThreadId } from "@/lib/utils/get-thread-id"
 import { submissionGraph } from "./graph"
 
 type Params = {
@@ -15,7 +16,9 @@ export const startSubmissionAgent = async (
 ) => {
   const { network, publicationId, rootCid } = params
 
-  const config = { configurable: { thread_id: `${publicationId}-${rootCid}` } }
+  const threadId = getThreadId({ publicationId, rootCid })
+
+  const config = { configurable: { thread_id: threadId } }
 
   // 1. Run the Graph
   const finalState = await submissionGraph.invoke({ publicationId, rootCid }, config)
