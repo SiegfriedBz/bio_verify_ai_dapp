@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+
+
 export const NetworkSchema = z.enum(["sepolia", "sei_testnet"])
 export type NetworkT = z.infer<typeof NetworkSchema>
 
@@ -25,3 +27,9 @@ export const WalletSchema = z.object({
 	// Chain identifier to distinguish between networks
 	network: NetworkSchema,
 })
+
+
+export const NetworkToChainId: Record<string, number> = {
+	[NetworkSchema.enum.sepolia]: 11155111,
+	[NetworkSchema.enum.sei_testnet]: 713715,
+}

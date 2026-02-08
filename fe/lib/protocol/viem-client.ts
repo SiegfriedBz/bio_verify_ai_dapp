@@ -1,6 +1,5 @@
 'server-only'
 
-import { bioVerifyContractConfig } from "@/app/_contracts/config"
 import { NetworkSchema, NetworkT } from "@/app/_schemas/wallet"
 import { createPublicClient, createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -51,12 +50,3 @@ export const getClient = (network: NetworkT) => {
 
   throw new Error("Unsupported Chain ID")
 }
-
-/**
- * HELPER: Get contract address & abi by network
- */
-export const getContractConfig = (network: NetworkT) => {
-  return bioVerifyContractConfig[network]
-}
-
-

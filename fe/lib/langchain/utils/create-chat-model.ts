@@ -1,3 +1,5 @@
+'server-only'
+
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 
 const apiKey = process.env.GEMINI_API_KEY
