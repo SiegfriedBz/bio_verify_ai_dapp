@@ -4,20 +4,12 @@ import { waitUntil } from "@vercel/functions"
 import { createHmac } from "node:crypto"
 import { decodeEventLog, parseAbi } from "viem"
 
-/**
-	cast sig-event "BioVerify_SubmittedPublication(address publisher, uint256 id, string cid)"
-	0xad618e8126c526f80565be03482b41af030be607a1ddab0a58dbcdc70c0c6922
- */
-
-const SEPOLIA_SK =
-	process.env.ALCHEMY_ETH_SEPOLIA_SubmittedPublication_WEBHOOK_SK
-
-// TODO implement the Alchemy Notify Webhook for Sei Testnet
-const SEI_SK = process.env.ALCHEMY_SEI_TESTNET_SubmittedPublication_WEBHOOK_SK
-
 const abi = parseAbi([
-	"event BioVerify_SubmittedPublication(address publisher, uint256 id, string cid)",
+	"event BioVerify_SubmittedPublication(address indexed publisher, uint256 indexed publicationId, string cid)",
 ])
+
+const SEPOLIA_SK = process.env.ALCHEMY_ETH_SEPOLIA_SubmittedPublication_WEBHOOK_SK
+const SEI_SK = process.env.ALCHEMY_SEI_TESTNET_SubmittedPublication_WEBHOOK_SK
 
 export async function POST(req: Request) {
 	if (!SEPOLIA_SK && !SEI_SK) {
@@ -29,66 +21,67 @@ export async function POST(req: Request) {
 		const signature = req.headers.get("x-alchemy-signature")
 		const rawBody = await req.text()
 
-		// Verify against whichever keys are available
-		const isSepolia =
-			SEPOLIA_SK &&
-			createHmac("sha256", SEPOLIA_SK).update(rawBody).digest("hex") ===
-			signature
+		if (!signature) return new Response("Missing signature", { status: 401 })
 
-		const isSei =
-			SEI_SK &&
+		// 1. Signature Verification (HMAC-SHA256)
+		const isSepolia = SEPOLIA_SK &&
+			createHmac("sha256", SEPOLIA_SK).update(rawBody).digest("hex") === signature
+
+		const isSei = SEI_SK &&
 			createHmac("sha256", SEI_SK).update(rawBody).digest("hex") === signature
 
 		if (!isSepolia && !isSei) {
-			console.error("❌ Signature Mismatch")
+			console.error("❌ Unauthorized: Signature Mismatch")
 			return new Response("Unauthorized", { status: 401 })
 		}
 
+		// 2. Parse Alchemy Payload
 		const body = JSON.parse(rawBody)
 		const log = body.event?.data?.block?.logs?.[0]
-		if (!log) return new Response("SubmittedPublication - No logs found", { status: 200 })
 
-		// Decode log
+		if (!log) {
+			console.warn("⚠️ Reviewers Webhook received but no log found in payload.")
+			return new Response("No logs found", { status: 200 })
+		}
+
+		// 3. Decode On-Chain Event
 		const decoded = decodeEventLog({
 			abi,
 			data: log.data,
 			topics: log.topics,
 		})
 
-		// Extract event params
-		const { id: publicationId, cid } = decoded.args as {
-			id: bigint
+		const { publicationId, cid: rootCid } = decoded.args as {
+			publicationId: bigint
 			cid: string
 		}
 
-		const publicationIdString = publicationId.toString()
+		const pubIdStr = publicationId.toString()
+		const network = isSepolia ? NetworkSchema.enum.sepolia : NetworkSchema.enum.sei_testnet
 
-		console.log(
-			`🚀 [${isSepolia ? "SEPOLIA" : "SEI Testnet"}] New Submission:`,
-			{
-				publicationId: publicationIdString,
-				cid,
-			},
-		)
+		console.log(`🚀 [${network.toUpperCase()}] New Submission Detected: Pub #${pubIdStr}`, {
+			rootCid,
+		})
 
-		// 4. Schedule LANGGRAPH Submission Agent as background work
-		// => Keep the lambda alive until this promise resolves
+		// 4. Trigger the Submission Agent (The "Shield")
+		// waitUntil keeps the Vercel function alive for forensic checks (Tavily)
 		waitUntil(
 			startSubmissionAgent({
-				network: isSepolia ? NetworkSchema.enum.sepolia : NetworkSchema.enum.sei_testnet,
-				publicationId: publicationIdString,
-				rootCid: cid,
+				network,
+				publicationId: pubIdStr,
+				rootCid,
 			}).then(() => {
-				console.log(`✅ SubmittedPublication - Background Agent finished for Publication id: ${publicationIdString}`)
+				console.log(`✅ Submission Agent Analysis Complete for Pub #${pubIdStr}`)
 			}).catch(err => {
-				console.error(`❌ SubmittedPublication - Background Agent failed:`, err)
+				console.error(`❌ Submission Agent failure for Pub #${pubIdStr}:`, err)
 			})
 		)
 
-		// 4'. Return response immediately to Alchemy 
+		// 5. Respond 202 to Alchemy to prevent retries
 		return new Response("Accepted", { status: 202 })
+
 	} catch (err) {
-		console.error("SubmittedPublication Webhook Logic Error:", err)
+		console.error("💥 Submission Webhook Internal Error:", err)
 		return new Response("Internal Error", { status: 500 })
 	}
 }
