@@ -1,7 +1,7 @@
 'server-only'
 
 import { NetworkT } from "@/app/_schemas/wallet"
-import { settleReviewFail, settleReviewPass } from "@/lib/protocol/review/actions"
+import { publishPublication, slashPublication } from "@/lib/protocol/review/actions"
 import { getThreadId } from "@/lib/utils/get-thread-id"
 import { reviewersGraph } from "./graph"
 import { InterruptKind, LlmDecisionSchema, ReviewsState } from "./state"
@@ -113,9 +113,9 @@ export const startReviewersAgent = async (params: Params): Promise<Return> => {
 			const reviewerAddress = curr.reviewer.address
 			const isHonest = curr.reviewer.verdict?.decision === finalVerdict.decision
 
-			if (isHonest) {
+			if (isHonest && !acc.honest.includes(reviewerAddress)) {
 				acc.honest.push(reviewerAddress)
-			} else {
+			} else if (!isHonest && !acc.negligent.includes(reviewerAddress)) {
 				acc.negligent.push(reviewerAddress)
 			}
 
@@ -132,9 +132,10 @@ export const startReviewersAgent = async (params: Params): Promise<Return> => {
 		}
 
 		if (finalVerdict.decision === LlmDecisionSchema.enum.pass) {
-			await settleReviewPass(settleParams)
+			await publishPublication(settleParams)
+
 		} else {
-			await settleReviewFail(settleParams)
+			await slashPublication(settleParams)
 		}
 	}
 

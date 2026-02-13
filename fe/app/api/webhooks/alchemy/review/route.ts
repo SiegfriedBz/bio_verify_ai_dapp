@@ -5,7 +5,7 @@ import { createHmac } from "node:crypto"
 import { decodeEventLog, parseAbi } from "viem"
 
 const abi = parseAbi([
-	"event BioVerify_Agent_PickedReviewers(uint256 indexed publicationId, string rootCid, address[] reviewers, address seniorReviewer, uint256 minValidReviewsCount)",
+	"event BioVerify_Agent_PickReviewers(uint256 indexed pubId,address[] reviewers,address indexed seniorReviewer,string rootCid,uint256 minValidReviewsCount)"
 ])
 
 const SEPOLIA_SK = process.env.ALCHEMY_ETH_SEPOLIA_Agent_PickedReviewers_WEBHOOK_SK
@@ -51,11 +51,11 @@ export async function POST(req: Request) {
 			topics: log.topics,
 		})
 
-		const { publicationId, rootCid, reviewers, seniorReviewer, minValidReviewsCount } = decoded.args as {
-			publicationId: bigint
+		const { pubId: publicationId, rootCid, reviewers, seniorReviewer, minValidReviewsCount } = decoded.args as {
+			pubId: bigint
 			rootCid: string
-			reviewers: string[]
-			seniorReviewer: string
+			reviewers: `0x${string}`[]
+			seniorReviewer: `0x${string}`
 			minValidReviewsCount: bigint
 		}
 

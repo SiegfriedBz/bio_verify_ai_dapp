@@ -16,12 +16,14 @@ type SettleParams = {
   negligentAddresses: string[]
 }
 
+// TODO update and reformulate natspecs
 /**
  * Updates on-chain state to allow Publisher to pull stake.
  * Distributes rewards to honest reviewers. 
  * Slashes dissenters.
  */
-export const settleReviewPass = async (params: SettleParams) => {
+// function publishPublication(uint256 _pubId, address[] calldata _honest, address[] calldata _negligent)
+export const publishPublication = async (params: SettleParams) => {
   const { network,
     publicationId,
     rootCid,
@@ -30,11 +32,11 @@ export const settleReviewPass = async (params: SettleParams) => {
     negligentAddresses: negligent
   } = params
 
-  console.log(`🔨 Agent settleReviewPass for Publication #${publicationId}`)
+  console.log(`🔨 Agent publish Publication #${publicationId}`)
   console.log(`Honest (Reward): ${honest.join(', ')}`)
   console.log(`Negligent (Slash): ${negligent.join(', ')}`)
 
-  // 1. Call BioVerify.settleReviewPass
+  // 1. Call BioVerify.publishPublication
   const contractConfig = getContractConfig(network)
 
   const { publicClient, agentClient } = getClient(network)
@@ -42,7 +44,7 @@ export const settleReviewPass = async (params: SettleParams) => {
   const { request } = await publicClient.simulateContract({
     account: agentAccount,
     ...contractConfig,
-    functionName: 'settleReviewPass',
+    functionName: 'publishPublication',
     args: [BigInt(publicationId), honest, negligent]
   })
 
@@ -51,7 +53,7 @@ export const settleReviewPass = async (params: SettleParams) => {
   // 2. Notify the community immediately
   await sendTelegramNotification(
     `✅ *BioVerify Alert: Publication Passed Review Successfully*\n\n` +
-    `Publication: #${publicationId}\n` +
+    `Publishing Publication: #${publicationId}\n` +
     `Honest (Reward): ${honest.join(', ')}\n` +
     `Negligent (Slash): ${negligent.join(', ')}\n` +
     `Evidence:\n\n` +
@@ -66,7 +68,8 @@ export const settleReviewPass = async (params: SettleParams) => {
  * Distributes rewards to honest reviewers who caught the fraud. 
  * Slashes negligent reviewers who voted "Pass".
  */
-export const settleReviewFail = async (params: SettleParams) => {
+// function slashPublication(uint256 _pubId, address[] calldata _honest, address[] calldata _negligent)
+export const slashPublication = async (params: SettleParams) => {
   const { network,
     publicationId,
     rootCid,
@@ -75,12 +78,12 @@ export const settleReviewFail = async (params: SettleParams) => {
     negligentAddresses: negligent
   } = params
 
-  console.log(`🔨 Agent settleReviewFail for Publication #${publicationId}`)
+  console.log(`🔨 Agent slash Publication #${publicationId}`)
   console.log(`Honest (Reward): ${honest.join(', ')}`)
   console.log(`Negligent (Slash): ${negligent.join(', ')}`)
 
 
-  // 1. Call BioVerify.settleReviewFail
+  // 1. Call BioVerify.slashPublication
   const contractConfig = getContractConfig(network)
 
   const { publicClient, agentClient } = getClient(network)
@@ -88,7 +91,7 @@ export const settleReviewFail = async (params: SettleParams) => {
   const { request } = await publicClient.simulateContract({
     account: agentAccount,
     ...contractConfig,
-    functionName: 'settleReviewFail',
+    functionName: 'slashPublication',
     args: [BigInt(publicationId), honest, negligent]
   })
 
@@ -97,7 +100,7 @@ export const settleReviewFail = async (params: SettleParams) => {
   // 2. Notify the community immediately
   await sendTelegramNotification(
     `🚨  *BioVerify Alert: Publication Review Failed*\n\n` +
-    `Publication: #${publicationId}\n` +
+    `Slashing Publication: #${publicationId}\n` +
     `Honest (Reward): ${honest.join(', ')}\n` +
     `Negligent (Slash): ${negligent.join(', ')}\n` +
     `Evidence:\n\n` +
