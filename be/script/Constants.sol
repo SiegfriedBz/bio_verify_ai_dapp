@@ -2,11 +2,15 @@
 pragma solidity ^0.8.13;
 
 contract Constants {
+    uint256 constant REPUTATION_BOOST = 100;
+
     // Publisher
     uint256 constant PUBLISHER_MIN_FEE = 0.005 ether; // Opex - Covers VRF + AI Agent costs
-    uint256 constant PUBLISHER_MIN_STAKE = 0.0005 ether; // Security/slashing - submitPublication call
+    uint256 constant PUBLISHER_MIN_STAKE = 0.0025 ether; // Security/slashing - submitPublication call
+
     // Reviewer
-    uint256 constant REVIEWER_MIN_STAKE = 0.0005 ether; // Security/slashing - joinReviewerPool call
+    uint256 constant REVIEWER_MIN_STAKE = 0.002 ether; // Security/slashing - joinReviewerPool call
+    uint256 constant REVIEWER_REWARD = 0.001 ether;
 
     // VRF
     address constant VRF_SEPOLIA_COORDINATOR = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;

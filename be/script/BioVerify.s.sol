@@ -12,12 +12,18 @@ contract BioVerifyScript is Script, Constants {
     uint256 vrfSubscriptionId = uint256(vm.envUint("VRF_SUBSCRIPTION_ID"));
 
     BioVerifyConfig config = BioVerifyConfig({
+        reputationBoost: REPUTATION_BOOST,
         aiAgent: aiAgentAddress,
         treasury: treasuryAddress,
+        // publisher
         pubMinFee: PUBLISHER_MIN_FEE,
         pubMinStake: PUBLISHER_MIN_STAKE,
+        // reviewer
         revMinStake: REVIEWER_MIN_STAKE,
+        revReward: REVIEWER_REWARD,
+        // min reviews count (seniorReviewer excepted)
         minReviewsCount: MIN_REVIEWS_COUNT,
+        // VRF
         vrfSubId: vrfSubscriptionId,
         vrfKeyHash: VRF_KEY_HASH,
         vrfGasLimit: VRF_CALLBACK_GAS_LIMIT,
@@ -31,7 +37,7 @@ contract BioVerifyScript is Script, Constants {
     function run() public returns (BioVerify) {
         vm.startBroadcast();
 
-        bioVerify = new BioVerify(config);
+        bioVerify = new BioVerify{value: 1 ether}(config);
 
         vm.stopBroadcast();
 
